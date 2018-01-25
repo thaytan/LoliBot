@@ -14,7 +14,7 @@ echo '### Remove boot.py ###'
 ampy rm boot.py >/dev/null 2>&1  # TODO: Fix this command failing
 
 echo '### Make directories ###'
-for d in configuration lib lib/aiko lib/umqtt; do
+for d in configuration lib lib/aiko lib/umqtt lib/mpu9250; do
   if ampy ls $d 2>&1 | grep RuntimeErr > /dev/null; then
     ampy mkdir $d
   fi
@@ -41,7 +41,11 @@ echo '### Copy udp_control.py ###'
 ampy put lib/udp_control.py lib/udp_control.py
 
 echo '### Copy mpu9250.py ###'
-ampy put lib/mpu9250.py lib/mpu9250.py
+ampy rm lib/mpu9250.py 2> /dev/null # Possibly remove stale file
+ampy put lib/lolibot_mpu9250.py lib/lolibot_mpu9250.py
+ampy put lib/mpu9250/imu.py lib/mpu9250/imu.py
+ampy put lib/mpu9250/mpu9250.py lib/mpu9250/mpu9250.py
+ampy put lib/mpu9250/vector3d.py lib/mpu9250/vector3d.py
 
 echo '### Copy lib/umqtt ###'
 ampy put lib/umqtt/simple.py lib/umqtt/simple.py

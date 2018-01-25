@@ -29,8 +29,8 @@ while not aiko.wifi.connect(configuration.wifi.ssids): time.sleep(0.5)
 aiko.led.set(aiko.led.colors["blue"], 0, True)
 
 import configuration.mpu9250
-import mpu9250
-mpu9250.initialise(configuration.mpu9250.settings, lolibot.i2c_bus)
+import lolibot_mpu9250
+lolibot_mpu9250.initialise(configuration.mpu9250.settings, lolibot.i2c_bus)
 
 # import aiko.services
 # import configuration.services
@@ -55,6 +55,6 @@ udp_control.add_message_handler(lolibot.on_message_lolibot)
 
 while True:
   aiko.mqtt.ping_check()        # TODO: Create a general timer handler
-  mpu9250.accel_check()
+  lolibot_mpu9250.accel_check()
   aiko.mqtt.client.check_msg()  # Then make this a blocking call
   udp_control.check()
