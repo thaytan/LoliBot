@@ -5,39 +5,51 @@ import time
 
 from mpu9250.mpu9250 import MPU9250
 from mpu9250.imu import MPUException
+from mpu9250.fusion import Fusion
 
-mpu = None
+imu = None
+fusion = Fusion()
 
 time_last_check = 0
-maxZ = -50.0
-minZ = 50.0
+time_last_report = 0
+TimingReport = False
+
+def calibrate():
+    def getmag():                               # Return (x, y, z) tuple (blocking read)
+      return imu.mag.xyz
+    # Calibrate for 100 ms
+    fusion.calibrate(getmag, lambda end=time.ticks_ms() + 100: time.ticks_ms() > end, 1)
 
 def initialise(settings, i2c_bus):
-    global mpu
+    global imu
 
     try:
-        mpu = MPU9250(i2c_bus, 0)
+        imu = MPU9250(i2c_bus, 0)
         print("MPU9250 initialised")
+        calibrate()
+        print("MPU9250 Calibration done. Magnetometer Bias {}".format(fusion.magbias))
     except MPUException:
         print("MPU9250 module not detected.")
 
 # FIXME: Replace with general timer implementation
-def accel_check():
-    global time_last_check, maxZ, minZ
+def imu_update():
+    global time_last_check, time_last_report
 
-    if mpu is None:
+    if imu is None:
         return
 
-    # Track the max/min accelerometer reading between updates
-    # and output them once per second
-    curZ = mpu.accel.z
-    maxZ = max(curZ, maxZ)
-    minZ = min(curZ, minZ)
-
     time_now = time.ticks_ms()
-    if time_now >= time_last_check + 1000:
+    # Update sensors at 50Hz
+    if time_now >= time_last_check + 20:
         time_last_check = time_now
-        print ("Accel Z {} min {} max {}".format(curZ, minZ, maxZ))
-        print ("Accel {} Gyro {} Mag {} Temperature {} C".format(mpu.accel.xyz, mpu.gyro.xyz, mpu.mag.xyz, mpu.temperature))
-        minZ = 50.0
-        maxZ = -50.0
+        if TimingReport:
+            start = time.ticks_us()  # Measure computation time only
+        fusion.update(imu.accel.xyz, imu.gyro.xyz, imu.mag.xyz) # Note blocking mag read
+        if TimingReport:
+            t = time.ticks_diff(time.ticks_us(), start)
+            print("Sensor Update time (uS):", t)
+
+    if time_now >= time_last_report + 1000:
+        time_last_report = time_now
+        print("Heading, Pitch, Roll: {:7.3f} {:7.3f} {:7.3f} Temperature {:2.1f}C".format( \
+              fusion.heading, fusion.pitch, fusion.roll, imu.temperature))

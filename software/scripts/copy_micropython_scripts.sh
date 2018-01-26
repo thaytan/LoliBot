@@ -46,6 +46,7 @@ ampy put lib/lolibot_mpu9250.py lib/lolibot_mpu9250.py
 ampy put lib/mpu9250/imu.py lib/mpu9250/imu.py
 ampy put lib/mpu9250/mpu9250.py lib/mpu9250/mpu9250.py
 ampy put lib/mpu9250/vector3d.py lib/mpu9250/vector3d.py
+ampy put lib/mpu9250/fusion.py lib/mpu9250/fusion.py
 
 echo '### Copy lib/umqtt ###'
 ampy put lib/umqtt/simple.py lib/umqtt/simple.py

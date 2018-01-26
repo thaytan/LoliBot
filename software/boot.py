@@ -55,6 +55,6 @@ udp_control.add_message_handler(lolibot.on_message_lolibot)
 
 while True:
   aiko.mqtt.ping_check()        # TODO: Create a general timer handler
-  lolibot_mpu9250.accel_check()
+  lolibot_mpu9250.imu_update()
   aiko.mqtt.client.check_msg()  # Then make this a blocking call
   udp_control.check()
