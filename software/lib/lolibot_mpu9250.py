@@ -2,6 +2,7 @@
 import struct
 import math
 import time
+import json
 
 from mpu9250.mpu9250 import MPU9250
 from mpu9250.imu import MPUException
@@ -25,12 +26,25 @@ def initialise(settings, i2c_bus):
 
     try:
         imu = MPU9250(i2c_bus, 0)
-        calibration_duration = 10000
-        print("MPU9250 initialised. ROM scaling {} Starting bias calibration for {} seconds.".format (imu.mag_correction, calibration_duration / 1000.0))
-        calibrate(calibration_duration)
-        print("MPU9250 Calibration done. Magnetometer Bias {}".format(fusion.magbias))
     except MPUException:
         print("MPU9250 module not detected.")
+        return
+
+    print("MPU9250 initialised. ROM scaling {}".format (imu.mag_correction))
+    try:
+        with open('configuration/mpu9250_calibration.json', 'r') as f:
+            calibration = json.load(f)
+            fusion.magbias = (float(calibration["x"]), float(calibration["y"]), float(calibration["z"]))
+            print("MPU9250 Calibration loaded. Magnetometer Bias {}".format(fusion.magbias))
+    except:
+        calibration_duration = 20000
+        print("Missing or invalid calibration file. Starting magnetic bias calibration for {} seconds.".format (calibration_duration / 1000.0))
+        # FIXME: Do LED animation
+        calibrate(calibration_duration)
+        print("MPU9250 Calibration done. Magnetometer Bias {}".format(fusion.magbias))
+        calibration = { "x": fusion.magbias[0], "y" : fusion.magbias[1], "z": fusion.magbias[2] }
+        with open('configuration/mpu9250_calibration.json', 'w') as f:
+            f.write (json.dumps(calibration))
 
 # FIXME: Replace with general timer implementation
 def imu_update():
