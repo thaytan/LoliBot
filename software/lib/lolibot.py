@@ -127,4 +127,4 @@ def initialise(settings):
 
   scl = settings["scl_pin"]
   sda = settings["sda_pin"]
-  i2c_bus = machine.I2C(scl=machine.Pin(scl), sda=machine.Pin(sda))
+  i2c_bus = machine.I2C(scl=machine.Pin(scl), sda=machine.Pin(sda), freq=200000)
